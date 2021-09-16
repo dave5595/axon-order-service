@@ -1,0 +1,90 @@
+spring:
+  application:
+    name: order-service
+  profiles:
+    active:
+      - rabbit-executor
+      - reactive-postgres
+      - axon
+
+---
+spring:
+  config:
+    activate:
+      on-profile:
+        - axon
+#axoniq:
+#  axonserver:
+#    devmode:
+#      enabled : true
+axon:
+  server:
+    enabled: true
+  eventhandling:
+    processors:
+      name:
+        mode: tracking
+        source: eventBus
+  serializer:
+    general : jackson
+    events : jackson
+    messages : jackson
+
+---
+spring:
+  config:
+    activate:
+      on-profile:
+        - security
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://auth-hk.finevotech.net/auth/realms/Broker-A
+---
+spring:
+  config:
+    activate:
+      on-profile:
+        - rabbit-executor
+
+  rabbitmq:
+    host: 192.168.100.71
+    port: 5672
+    username: guest
+    password: guest
+
+exchange:
+  channels:
+    usr: BM_054915
+    dbt: ~
+
+---
+spring:
+  config:
+    activate:
+      on-profile:
+        - postgres
+  datasource:
+    url: jdbc:postgresql://localhost:5432/orders
+    username: postgres
+    password: "025595"
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+
+---
+spring:
+  config:
+    activate:
+      on-profile:
+          - reactive-postgres
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/reactive-oms
+    username: postgres
+    password: "025595"
+    initialization-mode: always
+
