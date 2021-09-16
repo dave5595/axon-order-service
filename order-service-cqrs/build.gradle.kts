@@ -27,6 +27,8 @@ configurations {
 }
 
 dependencies {
+	//axon
+	implementation("org.axonframework.extensions.mongo:axon-mongo:4.4")
 	//finevo
 	implementation("com.yoda.mo.api:yoda-market-order-api-provider:1.3.0")
 	//codec

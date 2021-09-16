@@ -11,6 +11,10 @@ import com.finevotech.orderservicecqrs.order.enum.OrderType
 import com.finevotech.orderservicecqrs.order.enum.OrderValidity
 import com.lmax.disruptor.BusySpinWaitStrategy
 import com.lmax.disruptor.YieldingWaitStrategy
+import com.mongodb.MongoClientSettings
+import com.mongodb.client.MongoClient
+import com.mongodb.client.MongoClients
+import com.mongodb.client.internal.MongoClientImpl
 import org.axonframework.axonserver.connector.event.axon.AxonServerEventStore
 import org.axonframework.common.caching.Cache
 import org.axonframework.common.caching.WeakReferenceCache
@@ -22,6 +26,9 @@ import org.axonframework.eventhandling.tokenstore.inmemory.InMemoryTokenStore
 import org.axonframework.eventsourcing.AggregateFactory
 import org.axonframework.eventsourcing.AggregateLoadTimeSnapshotTriggerDefinition
 import org.axonframework.eventsourcing.eventstore.EventStore
+import org.axonframework.extensions.mongo.DefaultMongoTemplate
+import org.axonframework.extensions.mongo.MongoTemplate
+import org.axonframework.extensions.mongo.eventhandling.saga.repository.MongoSagaStore
 import org.axonframework.messaging.interceptors.CorrelationDataInterceptor
 import org.axonframework.modelling.saga.repository.CachingSagaStore
 import org.axonframework.modelling.saga.repository.SagaStore
@@ -37,6 +44,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Primary
 import java.time.LocalTime
 import java.util.*
 import java.util.concurrent.Executors
@@ -57,7 +65,6 @@ class OrderServiceCqrsApplication {
         return SimpleEventSchedulerFactoryBean()
     }
 
-    //configuring serializers
     @Bean
     fun eventSerializer(mapper: ObjectMapper): JacksonSerializer {
         return JacksonSerializer.Builder()
@@ -66,8 +73,24 @@ class OrderServiceCqrsApplication {
     }
 
     @Bean
-    fun sagaStore(sagaCache: Cache, associationsCache: Cache): CachingSagaStore<Any>{
-        val sagaStore = InMemorySagaStore()
+    fun mongo(): MongoClient{
+       return MongoClients.create("mongodb://localhost:27017")
+    }
+
+    @Bean
+    fun mongoTemplate(mongo: MongoClient): MongoTemplate{
+        return DefaultMongoTemplate
+            .Builder()
+            .mongoDatabase(mongo)
+            .build()
+    }
+
+    @Bean
+    fun sagaStore(template: MongoTemplate, serializer: JacksonSerializer, sagaCache: Cache, associationsCache: Cache): CachingSagaStore<Any>{
+        val sagaStore = MongoSagaStore.Builder()
+            .serializer(serializer)
+            .mongoTemplate(template)
+            .build()
         return CachingSagaStore.Builder<Any>()
             .delegateSagaStore(sagaStore)
             .associationsCache(associationsCache)
