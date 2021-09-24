@@ -12,13 +12,10 @@ object OmsCommandMapper {
     val log by Logger()
     fun toCommandAsync(message: WebSocketMessage): Mono<OrderCommand> {
         return Mono.fromCallable {
-            lateinit var command: NewOrderCommand
-            val payload = message.payloadAsText
-            command = JsonMapper.readValue(payload, NewOrderCommand::class.java)
-            command.created = LocalTime.now()
-            command
+           JsonMapper.readValue(message.payloadAsText, NewOrderCommand::class.java).apply {
+               created = LocalTime.now()
+           }
         }
-
     }
 
     fun toCommand(message: WebSocketMessage): OrderCommand {

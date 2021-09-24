@@ -23,8 +23,9 @@ axon:
   eventhandling:
     processors:
       name:
-        mode: tracking
+        mode: pooled
         source: eventBus
+        threadCount: 1
   serializer:
     general : jackson
     events : jackson

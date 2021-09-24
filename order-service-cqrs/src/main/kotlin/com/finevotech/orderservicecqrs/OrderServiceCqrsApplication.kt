@@ -12,6 +12,7 @@ import com.finevotech.orderservicecqrs.order.enum.OrderValidity
 import com.lmax.disruptor.BusySpinWaitStrategy
 import com.lmax.disruptor.YieldingWaitStrategy
 import org.axonframework.axonserver.connector.event.axon.AxonServerEventStore
+import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.common.caching.Cache
 import org.axonframework.common.caching.WeakReferenceCache
 import org.axonframework.common.transaction.TransactionManager
