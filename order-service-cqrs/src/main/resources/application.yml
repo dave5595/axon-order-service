@@ -20,12 +20,12 @@ spring:
 axon:
   server:
     enabled: true
-  eventhandling:
-    processors:
-      name:
-        mode: pooled
-        source: eventBus
-        threadCount: 1
+#  eventhandling:
+#    processors:
+#      name:
+#        mode: pooled
+#        source: eventBus
+#        threadCount: 5
   serializer:
     general : jackson
     events : jackson

@@ -10,12 +10,15 @@ import com.finevotech.orderservicecqrs.order.enum.OrderSide
 import com.finevotech.orderservicecqrs.order.enum.OrderType
 import com.finevotech.orderservicecqrs.order.enum.OrderValidity
 import com.lmax.disruptor.BusySpinWaitStrategy
+import com.lmax.disruptor.SleepingWaitStrategy
+import com.lmax.disruptor.WaitStrategy
 import com.lmax.disruptor.YieldingWaitStrategy
 import org.axonframework.axonserver.connector.event.axon.AxonServerEventStore
 import org.axonframework.commandhandling.gateway.CommandGateway
 import org.axonframework.common.caching.Cache
 import org.axonframework.common.caching.WeakReferenceCache
 import org.axonframework.common.transaction.TransactionManager
+import org.axonframework.config.EventProcessingConfigurer
 import org.axonframework.config.SagaConfigurer
 import org.axonframework.disruptor.commandhandling.DisruptorCommandBus
 import org.axonframework.eventhandling.tokenstore.TokenStore
@@ -34,10 +37,12 @@ import org.axonframework.spring.eventsourcing.SpringAggregateSnapshotter
 import org.axonframework.spring.eventsourcing.SpringAggregateSnapshotterFactoryBean
 import org.axonframework.spring.eventsourcing.SpringPrototypeAggregateFactory
 import org.springframework.beans.factory.FactoryBean
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
+import reactor.core.scheduler.Schedulers
 import java.time.LocalTime
 import java.util.*
 import java.util.concurrent.Executors
@@ -112,9 +117,7 @@ class OrderServiceCqrsApplication {
     ): DisruptorCommandBus {
         val commandBus = DisruptorCommandBus.builder()
             .waitStrategy(BusySpinWaitStrategy())
-            .executor(Executors.newFixedThreadPool(8))
-            .publisherThreadCount(1)
-            .invokerThreadCount(1)
+            .executor(Executors.newFixedThreadPool(20))
             .transactionManager(txManager)
             .cache(commandBusCache)
             .messageMonitor(axonConfiguration.messageMonitor(DisruptorCommandBus::class.java, "commandBus"))

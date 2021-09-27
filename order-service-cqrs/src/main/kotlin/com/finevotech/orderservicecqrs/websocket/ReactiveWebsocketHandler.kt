@@ -29,7 +29,7 @@ class ReactiveWebsocketHandler(
         //transforms input to a command and publishes them thru the gateway
         val input = session
             .receive()
-            .flatMap(OmsCommandMapper::toCommandAsync, Schedulers.DEFAULT_POOL_SIZE)
+            .flatMap(OmsCommandMapper::toCommandAsync,20)
             .subscribeOn(Schedulers.boundedElastic())
             .log()
             .doOnNext { commandGateway.send<Any>(it) }
